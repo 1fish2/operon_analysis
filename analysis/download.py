@@ -104,9 +104,12 @@ class DownloadSims:
         dirs = [[r.match(b.name)[1] for b in it] for it in iterators]
         return sum(dirs, [])  # flatten
 
-    def download_all_needed_files(self):
-        """Download all the needed files for the current analysis."""
+    def download_all_needed_files(self) -> int:
+        """Download all the needed files from this WCM workflow.
+        Returns the count of files downloaded."""
         # TODO(jerry): Parallel downloads would be faster...
+        count = 0
+
         generations = self.download_metadata()
         print(f'{generations=}')
         self.download_simdata_modified()
@@ -117,3 +120,7 @@ class DownloadSims:
                 sim_out = os.path.join(
                     seed_dir, f'generation_{gen:06d}', '000000', 'simOut')
                 self.download_files(sim_out, SIM_FILES)
+                count += len(SIM_FILES)
+
+        print(f'Downloaded {count} files\n')
+        return count
