@@ -1,0 +1,32 @@
+# operon e2-standard-8 VM built on debian 10, 500 GB standard persistent disk, no external IP address
+
+## Access it: gcloud compute ssh operon
+
+# Linux updates
+sudo apt update && sudo apt upgrade && sudo apt autoremove
+
+# Add linux packages, most of these are specified by pyenv
+sudo apt-get update
+sudo apt-get install -y --no-install-recommends make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev python-openssl nano git
+### + libncursesw5-dev?
+
+sudo reboot
+
+# Install Python virtualenv
+curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
+{
+  echo 'export PATH="$HOME/.pyenv/bin:$PATH"'
+  echo 'eval "$(pyenv init -)"'
+  echo 'eval "$(pyenv virtualenv-init -)"'; } >> ~/.bash_aliases
+source ~/.bash_aliases
+
+pyenv install 3.8.7
+
+# Set up a Python virtualenv "operon"
+mkdir -p operon
+cd operon
+
+pyenv virtualenv 3.8.7 operon
+pyenv local operon
+pip install -U pip setuptools
+pip install google-cloud-storage

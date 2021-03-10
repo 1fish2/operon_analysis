@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.o
+.python-version
+
+.DS_Store
+.DS_Store?
+._*
+
+.idea
+
+20210303.233437/
