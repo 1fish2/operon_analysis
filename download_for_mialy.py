@@ -1,3 +1,8 @@
+"""Script to download just the needed files (selected Table columns and some
+metadata) for further analysis processing of the Google Cloud Storage output
+from one or more wcEcoli sim workflow runs."""
+
+import time
 from typing import List
 
 from analysis.download import DownloadSims
@@ -21,13 +26,18 @@ LOCAL_OPERON = 'operon_branch'
 
 
 def download_workflows(bucket: str, workflows: List[str], to_local_dir: str) -> int:
+    start_secs = time.monotonic()
     count = 0
+
     for workflow in workflows:
         ds = DownloadSims(bucket=bucket,
                           wcm_workflow_name=workflow,
                           variant_name=VARIANT,
                           local_dir=to_local_dir)
         count += ds.download_all_needed_files()
+
+    elapsed_secs = time.monotonic() - start_secs
+    print(f'-- Downloaded {count} files into {to_local_dir} in {elapsed_secs:1.1f} seconds\n')
     return count
 
 

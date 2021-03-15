@@ -1,15 +1,23 @@
-"""Script to download just the needed files from a wcEcoli sim workflow run."""
+"""Utility to download just the needed files (selected Table columns and some
+metadata) for further analysis processing of the Google Cloud Storage output
+from a wcEcoli sim workflow run.
+
+This skips wcEcoli seed lines that failed before the requested number of sim
+generations. That can happen due to ODE solver instabilities. Turn on swap space
+so Out-Of-Memory won't cause sim failures.
+
+TODO(jerry): Parallel downloads would be faster...
+"""
 
 import json
 import re
 import os
+import time
 from typing import List
 
 from analysis.storage import CloudStorage
 
 
-BUCKET = 'sisyphus-mialydefelice-2'
-WORKFLOW_NAME = '20210228.075124__100_Seeds_32_gens_master_branch'
 VARIANT = 'wildtype_000000'
 METADATA_FILENAME = os.path.join('metadata', 'metadata.json')
 
@@ -51,24 +59,24 @@ class DownloadSims:
         self.init_sims = 0
         self.seed = 0
 
-    def download_file(self, storage_path: str):
-        """Download a file to the same relative path in the local_dir, and
-        return the local path."""
-        local_path = os.path.join(self.local_dir, storage_path)
-        print(f'Downloading {storage_path}')
-        self.storage.download_file(storage_path, local_path)
+    def download_file(self, relative_path: str):
+        """Download a file from the path (relative to storage_prefix) to the
+        same path (relative to the local_dir), and return the local path."""
+        local_path = os.path.join(self.local_dir, relative_path)
+        print(f'Downloading {relative_path}')
+        self.storage.download_file(relative_path, local_path)
         return local_path
 
-    def download_files(self, prefix: str, storage_paths: List[str]):
-        for p in storage_paths:
-            self.download_file(os.path.join(prefix, p))
+    def download_files(self, sub_dir: str, relative_paths: List[str]):
+        for p in relative_paths:
+            self.download_file(os.path.join(sub_dir, p))
 
     def download_metadata(self) -> int:
         """Download the workflow output's metadata.json file, read fields, and
         return its number of generations."""
-        local_name = self.download_file(METADATA_FILENAME)
+        local_path = self.download_file(METADATA_FILENAME)
 
-        with open(local_name) as fp:
+        with open(local_path) as fp:
             metadata = json.load(fp)
             self.generations = metadata['generations']
             self.init_sims = metadata['init_sims']
@@ -107,7 +115,7 @@ class DownloadSims:
     def download_all_needed_files(self) -> int:
         """Download all the needed files from this WCM workflow.
         Returns the count of files downloaded."""
-        # TODO(jerry): Parallel downloads would be faster...
+        start_secs = time.monotonic()
         count = 0
 
         generations = self.download_metadata()
@@ -122,5 +130,6 @@ class DownloadSims:
                 self.download_files(sim_out, SIM_FILES)
                 count += len(SIM_FILES)
 
-        print(f'Downloaded {count} files\n')
+        elapsed_secs = time.monotonic() - start_secs
+        print(f'-- Downloaded {count} files in {elapsed_secs:1.1f} seconds\n')
         return count

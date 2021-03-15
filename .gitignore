@@ -9,6 +9,7 @@ __pycache__/
 .DS_Store?
 ._*
 
-.idea
+.idea/
+/tmp/
 
-20210303.233437/
+202*/
