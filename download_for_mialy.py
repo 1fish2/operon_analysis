@@ -2,6 +2,7 @@
 metadata) for further analysis processing of the Google Cloud Storage output
 from one or more wcEcoli sim workflow runs."""
 
+import os
 import time
 from typing import List
 
@@ -26,6 +27,7 @@ LOCAL_OPERON = 'operon_branch'
 
 
 def download_workflows(bucket: str, workflows: List[str], to_local_dir: str) -> int:
+    to_local_dir = os.path.join(to_local_dir, '')
     start_secs = time.monotonic()
     count = 0
 
@@ -37,7 +39,8 @@ def download_workflows(bucket: str, workflows: List[str], to_local_dir: str) -> 
         count += ds.download_all_needed_files()
 
     elapsed_secs = time.monotonic() - start_secs
-    print(f'-- Downloaded {count} files into {to_local_dir} in {elapsed_secs:1.1f} seconds\n')
+    if len(workflows) > 1:
+        print(f'==== Downloaded {count} files into {to_local_dir} in {elapsed_secs:1.1f} seconds\n')
     return count
 
 

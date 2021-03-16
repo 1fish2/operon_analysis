@@ -106,6 +106,10 @@ class CloudStorage(object):
         return '{}({!r}, {!r})'.format(
             self.__class__.__name__, self.bucket_name, self.path_prefix)
 
+    def url(self, *path_elements: str) -> str:
+        """Return a gs:// URL for the combined path relative to the storage_prefix."""
+        return os.path.join('gs://', self.bucket_name, self.path_prefix, *path_elements)
+
     def clear_directory_cache(self):
         # type: () -> None
         """Clear the cache of directory placeholder names already created."""
